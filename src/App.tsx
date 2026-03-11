@@ -55,7 +55,7 @@ interface IdentificationRecord {
   userId: string;
   imageUrl: string;
   type: 'thinsection' | 'handspecimen' | 'outcrop';
-  category: 'mineral' | 'pollen' | 'spore' | 'fossil';
+  category: 'mineral' | 'pollen' | 'spore' | 'fossil' | 'rock';
   status: 'pending' | 'approved' | 'rejected';
   geologicalEra?: string;
   geographicOrigin?: string;
@@ -135,7 +135,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
   const [analyzing, setAnalyzing] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [specimenType, setSpecimenType] = useState<'thinsection' | 'handspecimen' | 'outcrop'>('thinsection');
-  const [category, setCategory] = useState<'mineral' | 'pollen' | 'spore' | 'fossil'>('mineral');
+  const [category, setCategory] = useState<'mineral' | 'pollen' | 'spore' | 'fossil' | 'rock'>('mineral');
   const [results, setResults] = useState<AnalysisResult[] | null>(null);
   const [history, setHistory] = useState<IdentificationRecord[]>([]);
   const [publicRecords, setPublicRecords] = useState<IdentificationRecord[]>([]);
@@ -402,7 +402,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               {
                 text: `Analyze this ${specimenType} image for ${category} content. 
                 If it's an outcrop, identify the primary geological formations, lithology, and any visible fossils or minerals.
-                Identify the specific ${category}s present and estimate their percentage by volume. 
+                ${category === 'rock' ? 'Identify the rock type (Igneous, Sedimentary, or Metamorphic), its mineral composition, texture, and name.' : `Identify the specific ${category}s present and estimate their percentage by volume.`}
                 Provide a detailed description for each identified item.`
               },
               {
@@ -513,6 +513,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                   <option value="pollen">{t.pollen}</option>
                   <option value="spore">{t.spore}</option>
                   <option value="fossil">{t.fossil}</option>
+                  <option value="rock">{t.rock}</option>
                 </select>
               </div>
             </div>
@@ -782,6 +783,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                     <option value="pollen">{t.pollen}</option>
                     <option value="spore">{t.spore}</option>
                     <option value="fossil">{t.fossil}</option>
+                    <option value="rock">{t.rock}</option>
                   </select>
                 </div>
               </div>
@@ -882,6 +884,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               <option value="pollen">{t.pollen}</option>
               <option value="spore">{t.spore}</option>
               <option value="fossil">{t.fossil}</option>
+              <option value="rock">{t.rock}</option>
             </select>
           </div>
           <div className="w-full md:w-48 space-y-2">

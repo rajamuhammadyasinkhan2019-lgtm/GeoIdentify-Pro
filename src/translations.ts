@@ -32,6 +32,7 @@ export interface Translations {
   pollen: string;
   spore: string;
   fossil: string;
+  rock: string;
   thinsection: string;
   handspecimen: string;
   outcrop: string;
@@ -133,6 +134,7 @@ export const translations: Record<Language, Translations> = {
     pollen: "Pollen",
     spore: "Spore",
     fossil: "Fossil",
+    rock: "Rock",
     thinsection: "Thin Section",
     handspecimen: "Hand Specimen",
     outcrop: "Outcrop",
@@ -147,7 +149,7 @@ export const translations: Record<Language, Translations> = {
     errorDesc: "An unexpected error occurred while running the application.",
     retry: "Retry",
     welcomeTitle: "Welcome to GeoIdentify Pro",
-    welcomeDesc: "Sign in to start identifying minerals, pollen, spores, and fossils from your geological samples.",
+    welcomeDesc: "Sign in to start identifying rocks, minerals, pollen, spores, and fossils from your geological samples.",
     continueWithGoogle: "Continue with Google",
     developedFor: "Developed for geological research and education.",
     authorInfo: "Author Information",
@@ -232,6 +234,7 @@ export const translations: Record<Language, Translations> = {
     pollen: "پولن",
     spore: "سپور",
     fossil: "فوسل",
+    rock: "چٹان",
     thinsection: "باریک تراش",
     handspecimen: "ہاتھ کا نمونہ",
     outcrop: "آؤٹ کراپ",
@@ -246,7 +249,7 @@ export const translations: Record<Language, Translations> = {
     errorDesc: "ایپلیکیشن چلاتے وقت ایک غیر متوقع غلطی پیش آگئی۔",
     retry: "دوبارہ کوشش کریں",
     welcomeTitle: "جیو آئیڈینٹیفائی پرو میں خوش آمدید",
-    welcomeDesc: "اپنے ارضیاتی نمونوں سے معدنیات، پولن، سپورز اور فوسلز کی شناخت شروع کرنے کے لیے سائن ان کریں۔",
+    welcomeDesc: "اپنے ارضیاتی نمونوں سے چٹانوں، معدنیات، پولن، سپورز اور فوسلز کی شناخت شروع کرنے کے لیے سائن ان کریں۔",
     continueWithGoogle: "گوگل کے ساتھ جاری رکھیں",
     developedFor: "ارضیاتی تحقیق اور تعلیم کے لیے تیار کیا گیا ہے۔",
     authorInfo: "مصنف کی معلومات",

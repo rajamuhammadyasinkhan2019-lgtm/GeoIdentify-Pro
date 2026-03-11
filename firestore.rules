@@ -21,7 +21,7 @@ service cloud.firestore {
     //   - userId: string (required)
     //   - imageUrl: string (required, url format)
     //   - type: string (required, enum: ['thinsection', 'handspecimen', 'outcrop'])
-    //   - category: string (required, enum: ['mineral', 'pollen', 'spore', 'fossil'])
+    //   - category: string (required, enum: ['mineral', 'pollen', 'spore', 'fossil', 'rock'])
     //   - results: list (required, list of objects with name, percentage, description)
     //   - timestamp: timestamp (required)
     //
@@ -68,12 +68,14 @@ service cloud.firestore {
     }
 
     function isValidIdentification(data) {
-      return data.keys().hasAll(['userId', 'imageUrl', 'results', 'timestamp', 'status']) &&
+      return data.keys().hasAll(['userId', 'imageUrl', 'results', 'timestamp', 'status', 'type', 'category']) &&
              data.userId == request.auth.uid &&
              isValidUrl(data.imageUrl) &&
              data.results is list &&
              data.timestamp is timestamp &&
-             data.status in ['pending', 'approved', 'rejected'];
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.type in ['thinsection', 'handspecimen', 'outcrop'] &&
+             data.category in ['mineral', 'pollen', 'spore', 'fossil', 'rock'];
     }
 
     // ===============================================================

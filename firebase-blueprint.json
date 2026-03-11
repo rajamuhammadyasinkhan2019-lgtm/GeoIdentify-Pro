@@ -22,7 +22,7 @@
         "userId": { "type": "string" },
         "imageUrl": { "type": "string" },
         "type": { "type": "string", "enum": ["thinsection", "handspecimen", "outcrop"], "description": "Type of specimen" },
-        "category": { "type": "string", "enum": ["mineral", "pollen", "spore", "fossil"], "description": "Category of identification" },
+        "category": { "type": "string", "enum": ["mineral", "pollen", "spore", "fossil", "rock"], "description": "Category of identification" },
         "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Moderation status" },
         "geologicalEra": { "type": "string" },
         "geographicOrigin": { "type": "string" },
