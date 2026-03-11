@@ -36,6 +36,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import Markdown from 'react-markdown';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { translations, Language, Translations } from './translations';
 
 // Utility for tailwind classes
 function cn(...inputs: ClassValue[]) {
@@ -72,7 +73,7 @@ interface IdentificationRecord {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode, t: any }, { hasError: boolean, error: any }> {
   constructor(props: any) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -87,22 +88,23 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 
   render() {
+    const { t } = this.props;
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
           <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-red-100 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-red-900 mb-2">Something went wrong</h2>
+            <h2 className="text-xl font-bold text-red-900 mb-2">{t.errorOccurred}</h2>
             <p className="text-stone-600 mb-6 text-sm">
               {this.state.error?.message?.startsWith('{') 
-                ? "A database error occurred. Please check your permissions." 
-                : "An unexpected error occurred while running the application."}
+                ? t.dbError 
+                : t.unexpectedError}
             </p>
             <button 
               onClick={() => window.location.reload()}
               className="bg-red-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
             >
-              Reload Application
+              {t.reloadApp}
             </button>
           </div>
         </div>
@@ -114,14 +116,19 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 export default function App() {
+  const [lang, setLang] = useState<Language>('en');
+  const t = translations[lang];
+
   return (
-    <ErrorBoundary>
-      <GeoIdentifyApp />
+    <ErrorBoundary t={t}>
+      <GeoIdentifyApp lang={lang} setLang={setLang} />
     </ErrorBoundary>
   );
 }
 
-function GeoIdentifyApp() {
+function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Language) => void }) {
+  const t = translations[lang];
+  
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -166,14 +173,14 @@ function GeoIdentifyApp() {
       setShowClearConfirm(false);
     } catch (err) {
       console.error("Error clearing history:", err);
-      setError("Failed to clear history. Please try again.");
+      setError(t.clearHistoryError);
     }
   };
 
   const handleShare = async (record: IdentificationRecord) => {
     const shareData = {
-      title: `Geological Specimen: ${record.results[0]?.name}`,
-      text: `Check out this ${record.category} specimen (${record.type}) identified using GeoIdentify Pro. Era: ${record.geologicalEra}, Origin: ${record.geographicOrigin}.`,
+      title: `${t.shareTitle}: ${record.results[0]?.name}`,
+      text: `${t.shareText} (${t[record.category as keyof Translations] || record.category} - ${t[record.type as keyof Translations] || record.type}). Era: ${record.geologicalEra}, Origin: ${record.geographicOrigin}.`,
       url: window.location.href,
     };
 
@@ -187,7 +194,7 @@ function GeoIdentifyApp() {
       // Fallback: Copy to clipboard
       try {
         await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
-        alert("Specimen details copied to clipboard!");
+        alert(t.copySuccess);
       } catch (err) {
         console.error("Clipboard error:", err);
       }
@@ -263,7 +270,7 @@ function GeoIdentifyApp() {
       await signInWithPopup(auth, googleProvider);
     } catch (err) {
       console.error("Login error:", err);
-      setError("Failed to sign in. Please try again.");
+      setError(t.signInError);
     }
   };
 
@@ -323,10 +330,10 @@ function GeoIdentifyApp() {
       setImage(null);
       setResults(null);
       setView('analyze');
-      alert("Contribution submitted for moderation!");
+      alert(t.contributeSuccess);
     } catch (err) {
       console.error("Contribution error:", err);
-      setError("Failed to submit contribution.");
+      setError(t.submitError);
     } finally {
       setAnalyzing(false);
     }
@@ -342,7 +349,7 @@ function GeoIdentifyApp() {
   };
 
   const deleteRecord = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this record?")) return;
+    if (!confirm(t.deleteConfirm)) return;
     try {
       const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
       await deleteDoc(firestoreDoc(db, 'identifications', id));
@@ -433,7 +440,7 @@ function GeoIdentifyApp() {
 
     } catch (err) {
       console.error("Analysis error:", err);
-      setError("Failed to analyze image. Please try again.");
+      setError(t.analyzeError);
     } finally {
       setAnalyzing(false);
     }
@@ -448,14 +455,14 @@ function GeoIdentifyApp() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-600" />
-                New Analysis
+                {t.newAnalysis}
               </h2>
               <button 
                 onClick={resetAnalysis}
                 className="text-xs font-bold uppercase tracking-wider text-stone-400 hover:text-emerald-600 flex items-center gap-1 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" />
-                Reset
+                {t.reset}
               </button>
             </div>
           </div>
@@ -464,7 +471,7 @@ function GeoIdentifyApp() {
             {/* Controls */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Specimen Type</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.specimenType}</label>
                 <div className="flex p-1 bg-stone-100 rounded-lg">
                   <button 
                     onClick={() => setSpecimenType('thinsection')}
@@ -473,7 +480,7 @@ function GeoIdentifyApp() {
                       specimenType === 'thinsection' ? "bg-white shadow-sm text-emerald-700" : "text-stone-600 hover:text-stone-900"
                     )}
                   >
-                    Thin Sec.
+                    {t.thinSec}
                   </button>
                   <button 
                     onClick={() => setSpecimenType('handspecimen')}
@@ -482,7 +489,7 @@ function GeoIdentifyApp() {
                       specimenType === 'handspecimen' ? "bg-white shadow-sm text-emerald-700" : "text-stone-600 hover:text-stone-900"
                     )}
                   >
-                    Hand Spec.
+                    {t.handSpec}
                   </button>
                   <button 
                     onClick={() => setSpecimenType('outcrop')}
@@ -491,21 +498,21 @@ function GeoIdentifyApp() {
                       specimenType === 'outcrop' ? "bg-white shadow-sm text-emerald-700" : "text-stone-600 hover:text-stone-900"
                     )}
                   >
-                    Outcrop
+                    {t.outcrop}
                   </button>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Category</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.category}</label>
                 <select 
                   value={category}
                   onChange={(e) => setCategory(e.target.value as any)}
                   className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium focus:ring-2 focus:ring-emerald-500"
                 >
-                  <option value="mineral">Minerals</option>
-                  <option value="pollen">Pollen</option>
-                  <option value="spore">Spores</option>
-                  <option value="fossil">Fossils</option>
+                  <option value="mineral">{t.mineral}</option>
+                  <option value="pollen">{t.pollen}</option>
+                  <option value="spore">{t.spore}</option>
+                  <option value="fossil">{t.fossil}</option>
                 </select>
               </div>
             </div>
@@ -533,8 +540,8 @@ function GeoIdentifyApp() {
                   <div className="w-12 h-12 bg-stone-200 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Upload className="w-6 h-6 text-stone-500" />
                   </div>
-                  <p className="text-sm font-medium text-stone-700">Click to upload specimen image</p>
-                  <p className="text-xs text-stone-500 mt-1">JPG, PNG up to 10MB</p>
+                  <p className="text-sm font-medium text-stone-700">{t.uploadTitle}</p>
+                  <p className="text-xs text-stone-500 mt-1">{t.uploadDesc}</p>
                 </div>
               )}
               <input 
@@ -566,12 +573,12 @@ function GeoIdentifyApp() {
               {analyzing ? (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin" />
-                  Analyzing Specimen...
+                  {t.analyzing}
                 </>
               ) : (
                 <>
                   <Microscope className="w-6 h-6" />
-                  Run Analysis
+                  {t.analyzeBtn}
                 </>
               )}
             </button>
@@ -584,10 +591,10 @@ function GeoIdentifyApp() {
             <div className="p-6 border-b border-stone-100 flex items-center justify-between">
               <h2 className="text-lg font-bold flex items-center gap-2 text-emerald-900">
                 <CheckCircle2 className="w-5 h-5" />
-                Analysis Results
+                {t.resultsTitle}
               </h2>
               <span className="text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-1 rounded">
-                {category}
+                {t[category as keyof Translations] || category}
               </span>
             </div>
             
@@ -605,7 +612,7 @@ function GeoIdentifyApp() {
               </div>
 
               <div className="h-[300px] flex flex-col items-center justify-center">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">Volume Distribution</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-4">{t.volumeDist}</h3>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -637,7 +644,7 @@ function GeoIdentifyApp() {
           <div className="p-6 border-b border-stone-100 flex items-center justify-between">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <History className="w-5 h-5 text-emerald-600" />
-              Analysis History
+              {t.historyTitle}
             </h2>
             {history.length > 0 && !showClearConfirm && (
               <button 
@@ -645,7 +652,7 @@ function GeoIdentifyApp() {
                 className="text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-600 flex items-center gap-1 transition-colors"
               >
                 <Trash2 className="w-3 h-3" />
-                Clear
+                {t.clearHistory}
               </button>
             )}
             {showClearConfirm && (
@@ -654,13 +661,13 @@ function GeoIdentifyApp() {
                   onClick={handleClearHistory}
                   className="text-[10px] font-bold uppercase bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 transition-colors"
                 >
-                  Confirm
+                  {t.confirmClear}
                 </button>
                 <button 
                   onClick={() => setShowClearConfirm(false)}
                   className="text-[10px] font-bold uppercase text-stone-400 hover:text-stone-600"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
               </div>
             )}
@@ -672,7 +679,7 @@ function GeoIdentifyApp() {
                 <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Box className="w-6 h-6 text-stone-300" />
                 </div>
-                <p className="text-sm text-stone-500">No previous analyses found.</p>
+                <p className="text-sm text-stone-500">{t.noHistory}</p>
               </div>
             ) : (
               history.map((record) => (
@@ -726,16 +733,16 @@ function GeoIdentifyApp() {
         <div className="p-6 border-b border-stone-100">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Share2 className="w-6 h-6 text-emerald-600" />
-            Contribute Specimen
+            {t.contributeTitle}
           </h2>
-          <p className="text-sm text-stone-500 mt-1">Share your identified samples with the community. All contributions are moderated.</p>
+          <p className="text-sm text-stone-500 mt-1">{t.contributeDesc}</p>
         </div>
 
         <form onSubmit={handleContribution} className="p-6 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Specimen Image</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.uploadImage}</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
@@ -747,13 +754,13 @@ function GeoIdentifyApp() {
                     <>
                       <img src={image} alt="Preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <p className="text-white font-medium">Change Image</p>
+                        <p className="text-white font-medium">{t.uploadTitle}</p>
                       </div>
                     </>
                   ) : (
                     <div className="text-center p-6">
                       <Upload className="w-8 h-8 text-stone-400 mx-auto mb-2" />
-                      <p className="text-xs font-medium text-stone-600">Upload Image</p>
+                      <p className="text-xs font-medium text-stone-600">{t.uploadImage}</p>
                     </div>
                   )}
                 </div>
@@ -761,20 +768,20 @@ function GeoIdentifyApp() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Type</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.specimenType}</label>
                   <select name="type" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium">
-                    <option value="thinsection">Thin Section</option>
-                    <option value="handspecimen">Hand Specimen</option>
-                    <option value="outcrop">Outcrop</option>
+                    <option value="thinsection">{t.thinsection}</option>
+                    <option value="handspecimen">{t.handspecimen}</option>
+                    <option value="outcrop">{t.outcrop}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Category</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.category}</label>
                   <select name="category" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium">
-                    <option value="mineral">Mineral</option>
-                    <option value="pollen">Pollen</option>
-                    <option value="spore">Spore</option>
-                    <option value="fossil">Fossil</option>
+                    <option value="mineral">{t.mineral}</option>
+                    <option value="pollen">{t.pollen}</option>
+                    <option value="spore">{t.spore}</option>
+                    <option value="fossil">{t.fossil}</option>
                   </select>
                 </div>
               </div>
@@ -782,11 +789,11 @@ function GeoIdentifyApp() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Identification Details</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.idDetails}</label>
                 <input 
                   name="name" 
                   required 
-                  placeholder="Mineral/Species Name" 
+                  placeholder={t.speciesName} 
                   className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium"
                 />
                 <div className="flex items-center gap-2">
@@ -796,38 +803,38 @@ function GeoIdentifyApp() {
                     required 
                     min="0" 
                     max="100" 
-                    placeholder="Volume %" 
+                    placeholder={t.volumePercent} 
                     className="w-24 bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium"
                   />
-                  <span className="text-sm text-stone-500">% by volume</span>
+                  <span className="text-sm text-stone-500">{t.byVolume}</span>
                 </div>
                 <textarea 
                   name="description" 
                   required 
-                  placeholder="Key identifying characteristics..." 
+                  placeholder={t.characteristics} 
                   className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium h-24 resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Geological Era</label>
-                  <input name="era" placeholder="e.g. Jurassic" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.geoEra}</label>
+                  <input name="era" placeholder={t.eraPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Origin</label>
-                  <input name="origin" placeholder="Geographic origin" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.origin}</label>
+                  <input name="origin" placeholder={t.originPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Hardness (Mohs)</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.hardness}</label>
                   <input name="hardness" type="number" step="0.1" placeholder="e.g. 7.0" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Color</label>
-                  <input name="color" placeholder="Specimen color" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.color}</label>
+                  <input name="color" placeholder={t.colorPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
               </div>
             </div>
@@ -840,7 +847,7 @@ function GeoIdentifyApp() {
               className="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
-              Submit Contribution
+              {t.submitBtn}
             </button>
           </div>
         </form>
@@ -853,40 +860,40 @@ function GeoIdentifyApp() {
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1 space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Search Era/Origin</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.searchEraOrigin}</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
               <input 
                 type="text"
-                placeholder="Search by era or geographic origin..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-2 bg-stone-100 border-none rounded-lg text-sm"
                 onChange={(e) => setFilters(prev => ({ ...prev, era: e.target.value, origin: e.target.value }))}
               />
             </div>
           </div>
           <div className="w-full md:w-48 space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Category</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.category}</label>
             <select 
               className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm"
               onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value as any || undefined }))}
             >
-              <option value="">All Categories</option>
-              <option value="mineral">Minerals</option>
-              <option value="pollen">Pollen</option>
-              <option value="spore">Spores</option>
-              <option value="fossil">Fossils</option>
+              <option value="">{t.allCategories}</option>
+              <option value="mineral">{t.mineral}</option>
+              <option value="pollen">{t.pollen}</option>
+              <option value="spore">{t.spore}</option>
+              <option value="fossil">{t.fossil}</option>
             </select>
           </div>
           <div className="w-full md:w-48 space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Type</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.specimenType}</label>
             <select 
               className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm"
               onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as any || undefined }))}
             >
-              <option value="">All Types</option>
-              <option value="thinsection">Thin Section</option>
-              <option value="handspecimen">Hand Specimen</option>
-              <option value="outcrop">Outcrop</option>
+              <option value="">{t.allTypes}</option>
+              <option value="thinsection">{t.thinsection}</option>
+              <option value="handspecimen">{t.handspecimen}</option>
+              <option value="outcrop">{t.outcrop}</option>
             </select>
           </div>
         </div>
@@ -896,7 +903,7 @@ function GeoIdentifyApp() {
         {filteredPublicRecords.length === 0 ? (
           <div className="col-span-full text-center py-20 bg-white rounded-2xl border border-stone-200">
             <Box className="w-12 h-12 text-stone-200 mx-auto mb-4" />
-            <p className="text-stone-500">No approved specimens found matching your criteria.</p>
+            <p className="text-stone-500">{t.noSpecimens}</p>
           </div>
         ) : (
           filteredPublicRecords.map(record => (
@@ -905,10 +912,10 @@ function GeoIdentifyApp() {
                 <img src={record.imageUrl} alt={record.results[0]?.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-3 left-3 flex gap-2">
                   <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded">
-                    {record.category}
+                    {t[record.category as keyof Translations] || record.category}
                   </span>
                   <span className="bg-emerald-600/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded">
-                    {record.type}
+                    {t[record.type as keyof Translations] || record.type}
                   </span>
                 </div>
               </div>
@@ -917,17 +924,17 @@ function GeoIdentifyApp() {
                   <h3 className="text-lg font-bold text-stone-800">{record.results[0]?.name}</h3>
                   <p className="text-xs text-stone-500 flex items-center gap-1 mt-1">
                     <MapPin className="w-3 h-3" />
-                    {record.geographicOrigin || 'Unknown Origin'} • {record.geologicalEra || 'Unknown Era'}
+                    {record.geographicOrigin || t.unknownOrigin} • {record.geologicalEra || t.unknownEra}
                   </p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-stone-50 p-2 rounded-lg">
-                    <p className="text-[10px] font-bold uppercase text-stone-400">Hardness</p>
+                    <p className="text-[10px] font-bold uppercase text-stone-400">{t.hardness}</p>
                     <p className="text-sm font-bold text-stone-700">{record.hardness || 'N/A'}</p>
                   </div>
                   <div className="bg-stone-50 p-2 rounded-lg">
-                    <p className="text-[10px] font-bold uppercase text-stone-400">Volume</p>
+                    <p className="text-[10px] font-bold uppercase text-stone-400">{t.volume}</p>
                     <p className="text-sm font-bold text-stone-700">{record.results[0]?.percentage}%</p>
                   </div>
                 </div>
@@ -941,16 +948,16 @@ function GeoIdentifyApp() {
                       }}
                       className="text-emerald-600 text-sm font-bold hover:text-emerald-700 transition-colors flex items-center gap-1"
                     >
-                      View Report
+                      {t.viewReport}
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => handleShare(record)}
                       className="text-stone-400 hover:text-emerald-600 transition-colors flex items-center gap-1 text-sm font-medium"
-                      title="Share specimen"
+                      title={t.share}
                     >
                       <Share2 className="w-4 h-4" />
-                      Share
+                      {t.share}
                     </button>
                   </div>
                   <span className="text-[10px] text-stone-400">
@@ -970,10 +977,10 @@ function GeoIdentifyApp() {
       <div className="p-6 border-b border-stone-100 flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <ShieldCheck className="w-6 h-6 text-emerald-600" />
-          Moderation Queue
+          {t.modQueue}
         </h2>
         <span className="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-1 rounded-full">
-          {publicRecords.filter(r => r.status === 'pending').length} Pending
+          {publicRecords.filter(r => r.status === 'pending').length} {t.pending}
         </span>
       </div>
 
@@ -981,10 +988,10 @@ function GeoIdentifyApp() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-stone-50 text-stone-500 text-xs font-bold uppercase tracking-wider">
-              <th className="px-6 py-4">Specimen</th>
-              <th className="px-6 py-4">Details</th>
-              <th className="px-6 py-4">Identification</th>
-              <th className="px-6 py-4">Actions</th>
+              <th className="px-6 py-4">{t.specimen}</th>
+              <th className="px-6 py-4">{t.details}</th>
+              <th className="px-6 py-4">{t.identification}</th>
+              <th className="px-6 py-4">{t.actions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
@@ -997,7 +1004,7 @@ function GeoIdentifyApp() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-stone-800 capitalize">{record.type} • {record.category}</p>
+                    <p className="text-sm font-bold text-stone-800 capitalize">{t[record.type as keyof Translations] || record.type} • {t[record.category as keyof Translations] || record.category}</p>
                     <p className="text-xs text-stone-500">{record.geographicOrigin} • {record.geologicalEra}</p>
                   </div>
                 </td>
@@ -1012,21 +1019,21 @@ function GeoIdentifyApp() {
                     <button 
                       onClick={() => moderateRecord(record.id, 'approved')}
                       className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                      title="Approve"
+                      title={t.approve}
                     >
                       <CheckCircle2 className="w-5 h-5" />
                     </button>
                     <button 
                       onClick={() => moderateRecord(record.id, 'rejected')}
                       className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                      title="Reject"
+                      title={t.reject}
                     >
                       <XCircle className="w-5 h-5" />
                     </button>
                     <button 
                       onClick={() => deleteRecord(record.id)}
                       className="p-2 bg-stone-100 text-stone-600 rounded-lg hover:bg-stone-200 transition-colors"
-                      title="Delete"
+                      title={t.delete}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -1037,7 +1044,7 @@ function GeoIdentifyApp() {
             {publicRecords.filter(r => r.status === 'pending').length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-12 text-center text-stone-500">
-                  No pending contributions to moderate.
+                  {t.noPending}
                 </td>
               </tr>
             )}
@@ -1056,7 +1063,7 @@ function GeoIdentifyApp() {
       } catch (error) {
         if (error instanceof Error && error.message.includes('the client is offline')) {
           console.error("Please check your Firebase configuration.");
-          setError("Database connection failed. Please check your internet or configuration.");
+          setError(t.dbConnError);
         }
       }
     };
@@ -1158,20 +1165,20 @@ function GeoIdentifyApp() {
         {!user ? (
           <div className="max-w-md mx-auto mt-12 text-center space-y-6">
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-              <h2 className="text-2xl font-bold mb-4">Welcome to GeoIdentify Pro</h2>
+              <h2 className="text-2xl font-bold mb-4">{t.welcomeTitle}</h2>
               <p className="text-stone-600 mb-8">
-                Sign in to start identifying minerals, pollen, spores, and fossils from your geological samples.
+                {t.welcomeDesc}
               </p>
               <button 
                 onClick={handleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-stone-700 px-6 py-3 rounded-xl hover:bg-stone-50 transition-all font-medium shadow-sm"
               >
                 <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-                Continue with Google
+                {t.continueWithGoogle}
               </button>
             </div>
             <p className="text-sm text-stone-500">
-              Developed for geological research and education.
+              {t.developedFor}
             </p>
           </div>
         ) : (
@@ -1191,7 +1198,7 @@ function GeoIdentifyApp() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Microscope className="w-6 h-6 text-emerald-500" />
-                <span className="text-xl font-bold text-white">GeoIdentify Pro</span>
+                <span className="text-xl font-bold text-white">{t.appName}</span>
               </div>
               <p className="text-sm leading-relaxed">
                 Advanced AI-powered geological identification system for thin sections and hand specimens. 
@@ -1200,20 +1207,20 @@ function GeoIdentifyApp() {
             </div>
             
             <div className="space-y-4">
-              <h4 className="text-white font-bold uppercase tracking-widest text-xs">Author Information</h4>
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs">{t.authorInfo}</h4>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-stone-200">Muhammad Yasin Khan</p>
                 <p className="text-xs">Geological Researcher & Developer</p>
                 <div className="pt-2">
                   <span className="bg-emerald-900/50 text-emerald-400 text-[10px] font-bold uppercase tracking-tighter px-2 py-1 rounded border border-emerald-800/50">
-                    Lead Scientist
+                    {t.leadScientist}
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-white font-bold uppercase tracking-widest text-xs">Origin</h4>
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs">{t.origin}</h4>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-6 flex rounded-sm overflow-hidden border border-emerald-800 shadow-sm">
                   <div className="w-1/4 h-full bg-white"></div>
@@ -1227,20 +1234,20 @@ function GeoIdentifyApp() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white flex items-center gap-2">
-                    Made in Pakistan
+                    {t.madeInPakistan}
                   </p>
-                  <p className="text-xs">Proudly developed in Pakistan for the global geological community.</p>
+                  <p className="text-xs">{t.proudlyDeveloped}</p>
                 </div>
               </div>
             </div>
           </div>
           
           <div className="pt-8 border-t border-stone-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs">© 2026 GeoIdentify Pro. All rights reserved.</p>
+            <p className="text-xs">© 2026 {t.appName}. {t.rightsReserved}</p>
             <div className="flex gap-6 text-xs">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors">Documentation</a>
+              <a href="#" className="hover:text-white transition-colors">{t.privacyPolicy}</a>
+              <a href="#" className="hover:text-white transition-colors">{t.termsOfService}</a>
+              <a href="#" className="hover:text-white transition-colors">{t.documentation}</a>
             </div>
           </div>
         </div>
