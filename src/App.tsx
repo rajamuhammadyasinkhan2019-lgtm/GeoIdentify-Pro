@@ -937,6 +937,17 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                   <input name="grainSize" placeholder="e.g. Fine, Coarse" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.geologicalContext}</label>
+                  <textarea 
+                    name="context" 
+                    placeholder={t.contextPlaceholder} 
+                    className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium h-24 resize-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

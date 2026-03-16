@@ -117,6 +117,8 @@ export interface Translations {
   fracturePlaceholder: string;
   magnetismPlaceholder: string;
   effervescencePlaceholder: string;
+  geologicalContext: string;
+  contextPlaceholder: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -237,6 +239,8 @@ export const translations: Record<Language, Translations> = {
     fracturePlaceholder: "e.g. Conchoidal",
     magnetismPlaceholder: "e.g. Strong, Weak, None",
     effervescencePlaceholder: "e.g. Strong, None",
+    geologicalContext: "Geological Context",
+    contextPlaceholder: "Provide background information about location or formation...",
   },
   ur: {
     appName: "جیو آئیڈینٹیفائی پرو",
@@ -355,5 +359,7 @@ export const translations: Record<Language, Translations> = {
     fracturePlaceholder: "مثلاً شنک نما",
     magnetismPlaceholder: "مثلاً مضبوط، کمزور، کوئی نہیں",
     effervescencePlaceholder: "مثلاً تیز، کوئی نہیں",
+    geologicalContext: "ارضیاتی سیاق و سباق",
+    contextPlaceholder: "مقام یا تشکیل کے بارے میں پس منظر کی معلومات فراہم کریں...",
   }
 };
