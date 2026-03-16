@@ -28,6 +28,8 @@
         "geographicOrigin": { "type": "string" },
         "hardness": { "type": "number" },
         "color": { "type": "string" },
+        "rockType": { "type": "string", "enum": ["Igneous", "Sedimentary", "Metamorphic"] },
+        "texture": { "type": "string" },
         "crystalSystem": { "type": "string" },
         "refractiveIndex": { "type": "number" },
         "morphology": { "type": "string" },

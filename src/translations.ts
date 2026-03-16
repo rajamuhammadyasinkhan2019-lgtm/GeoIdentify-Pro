@@ -99,6 +99,11 @@ export interface Translations {
   clearHistoryError: string;
   signInError: string;
   dbConnError: string;
+  rockType: string;
+  texture: string;
+  igneous: string;
+  sedimentary: string;
+  metamorphic: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -201,6 +206,11 @@ export const translations: Record<Language, Translations> = {
     clearHistoryError: "Failed to clear history. Please try again.",
     signInError: "Failed to sign in. Please try again.",
     dbConnError: "Database connection failed. Please check your internet or configuration.",
+    rockType: "Rock Type",
+    texture: "Texture",
+    igneous: "Igneous",
+    sedimentary: "Sedimentary",
+    metamorphic: "Metamorphic",
   },
   ur: {
     appName: "جیو آئیڈینٹیفائی پرو",
@@ -301,5 +311,10 @@ export const translations: Record<Language, Translations> = {
     clearHistoryError: "ہسٹری صاف کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔",
     signInError: "سائن ان کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔",
     dbConnError: "ڈیٹا بیس کنکشن ناکام ہوگیا۔ براہ کرم اپنا انٹرنیٹ یا کنفیگریشن چیک کریں۔",
+    rockType: "چٹان کی قسم",
+    texture: "بناوٹ",
+    igneous: "آتشی",
+    sedimentary: "رسوبی",
+    metamorphic: "تغیراتی",
   }
 };

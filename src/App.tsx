@@ -61,6 +61,8 @@ interface IdentificationRecord {
   geographicOrigin?: string;
   hardness?: number;
   color?: string;
+  rockType?: string;
+  texture?: string;
   crystalSystem?: string;
   refractiveIndex?: number;
   morphology?: string;
@@ -311,6 +313,8 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
       geographicOrigin: formData.get('origin') as string,
       hardness: Number(formData.get('hardness')),
       color: formData.get('color') as string,
+      rockType: formData.get('rockType') as string,
+      texture: formData.get('texture') as string,
       crystalSystem: formData.get('crystalSystem') as string,
       refractiveIndex: Number(formData.get('refractiveIndex')),
       morphology: formData.get('morphology') as string,
@@ -391,7 +395,11 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                   },
                   required: ["name", "percentage", "description"]
                 }
-              }
+              },
+              rockType: { type: "string", description: "If category is rock, identify as Igneous, Sedimentary, or Metamorphic" },
+              texture: { type: "string", description: "If category is rock, describe texture" },
+              geologicalEra: { type: "string" },
+              geographicOrigin: { type: "string" }
             },
             required: ["results"]
           }
@@ -403,6 +411,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                 text: `Analyze this ${specimenType} image for ${category} content. 
                 If it's an outcrop, identify the primary geological formations, lithology, and any visible fossils or minerals.
                 ${category === 'rock' ? 'Identify the rock type (Igneous, Sedimentary, or Metamorphic), its mineral composition, texture, and name.' : `Identify the specific ${category}s present and estimate their percentage by volume.`}
+                Also estimate the geological era and geographic origin if possible.
                 Provide a detailed description for each identified item.`
               },
               {
@@ -431,6 +440,10 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           type: specimenType,
           category: category,
           results: analysisResults,
+          rockType: data.rockType || undefined,
+          texture: data.texture || undefined,
+          geologicalEra: data.geologicalEra || undefined,
+          geographicOrigin: data.geographicOrigin || undefined,
           status: 'approved', // Auto-approved for personal analysis
           timestamp: Timestamp.now()
         });
@@ -839,6 +852,22 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                   <input name="color" placeholder={t.colorPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.rockType}</label>
+                  <select name="rockType" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium">
+                    <option value="">Select Type</option>
+                    <option value="Igneous">{t.igneous}</option>
+                    <option value="Sedimentary">{t.sedimentary}</option>
+                    <option value="Metamorphic">{t.metamorphic}</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.texture}</label>
+                  <input name="texture" placeholder="e.g. Crystalline" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -941,6 +970,23 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                     <p className="text-sm font-bold text-stone-700">{record.results[0]?.percentage}%</p>
                   </div>
                 </div>
+
+                {record.category === 'rock' && (record.rockType || record.texture) && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {record.rockType && (
+                      <div className="bg-emerald-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-emerald-600">{t.rockType}</p>
+                        <p className="text-xs font-bold text-emerald-800">{record.rockType}</p>
+                      </div>
+                    )}
+                    {record.texture && (
+                      <div className="bg-emerald-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-emerald-600">{t.texture}</p>
+                        <p className="text-xs font-bold text-emerald-800">{record.texture}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
                   <div className="flex items-center gap-4">
