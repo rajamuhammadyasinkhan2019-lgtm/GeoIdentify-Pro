@@ -104,6 +104,19 @@ export interface Translations {
   igneous: string;
   sedimentary: string;
   metamorphic: string;
+  luster: string;
+  streak: string;
+  cleavage: string;
+  fracture: string;
+  magnetism: string;
+  effervescence: string;
+  grainSize: string;
+  lusterPlaceholder: string;
+  streakPlaceholder: string;
+  cleavagePlaceholder: string;
+  fracturePlaceholder: string;
+  magnetismPlaceholder: string;
+  effervescencePlaceholder: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -211,6 +224,19 @@ export const translations: Record<Language, Translations> = {
     igneous: "Igneous",
     sedimentary: "Sedimentary",
     metamorphic: "Metamorphic",
+    luster: "Luster",
+    streak: "Streak",
+    cleavage: "Cleavage",
+    fracture: "Fracture",
+    magnetism: "Magnetism",
+    effervescence: "Effervescence (HCl)",
+    grainSize: "Grain Size",
+    lusterPlaceholder: "e.g. Vitreous, Metallic",
+    streakPlaceholder: "e.g. White, Red-brown",
+    cleavagePlaceholder: "e.g. Perfect, Good",
+    fracturePlaceholder: "e.g. Conchoidal",
+    magnetismPlaceholder: "e.g. Strong, Weak, None",
+    effervescencePlaceholder: "e.g. Strong, None",
   },
   ur: {
     appName: "جیو آئیڈینٹیفائی پرو",
@@ -316,5 +342,18 @@ export const translations: Record<Language, Translations> = {
     igneous: "آتشی",
     sedimentary: "رسوبی",
     metamorphic: "تغیراتی",
+    luster: "چمک",
+    streak: "لکیر",
+    cleavage: "کلیویج",
+    fracture: "فریکچر",
+    magnetism: "مقناطیسیت",
+    effervescence: "جوش (HCl ٹیسٹ)",
+    grainSize: "ذرات کا سائز",
+    lusterPlaceholder: "مثلاً شیشے جیسی، دھاتی",
+    streakPlaceholder: "مثلاً سفید، سرخ بھورا",
+    cleavagePlaceholder: "مثلاً بہترین، اچھی",
+    fracturePlaceholder: "مثلاً شنک نما",
+    magnetismPlaceholder: "مثلاً مضبوط، کمزور، کوئی نہیں",
+    effervescencePlaceholder: "مثلاً تیز، کوئی نہیں",
   }
 };

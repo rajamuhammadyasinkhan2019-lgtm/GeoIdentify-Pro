@@ -63,6 +63,13 @@ interface IdentificationRecord {
   color?: string;
   rockType?: string;
   texture?: string;
+  luster?: string;
+  streak?: string;
+  cleavage?: string;
+  fracture?: string;
+  magnetism?: string;
+  effervescence?: string;
+  grainSize?: string;
   crystalSystem?: string;
   refractiveIndex?: number;
   morphology?: string;
@@ -315,6 +322,13 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
       color: formData.get('color') as string,
       rockType: formData.get('rockType') as string,
       texture: formData.get('texture') as string,
+      luster: formData.get('luster') as string,
+      streak: formData.get('streak') as string,
+      cleavage: formData.get('cleavage') as string,
+      fracture: formData.get('fracture') as string,
+      magnetism: formData.get('magnetism') as string,
+      effervescence: formData.get('effervescence') as string,
+      grainSize: formData.get('grainSize') as string,
       crystalSystem: formData.get('crystalSystem') as string,
       refractiveIndex: Number(formData.get('refractiveIndex')),
       morphology: formData.get('morphology') as string,
@@ -398,6 +412,13 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               },
               rockType: { type: "string", description: "If category is rock, identify as Igneous, Sedimentary, or Metamorphic" },
               texture: { type: "string", description: "If category is rock, describe texture" },
+              luster: { type: "string", description: "If hand specimen, identify luster" },
+              streak: { type: "string", description: "If hand specimen, identify streak" },
+              cleavage: { type: "string", description: "If hand specimen, identify cleavage" },
+              fracture: { type: "string", description: "If hand specimen, identify fracture" },
+              magnetism: { type: "string", description: "If hand specimen, identify magnetism" },
+              effervescence: { type: "string", description: "If hand specimen, identify effervescence with HCl" },
+              grainSize: { type: "string", description: "If hand specimen, identify grain size" },
               geologicalEra: { type: "string" },
               geographicOrigin: { type: "string" }
             },
@@ -410,6 +431,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               {
                 text: `Analyze this ${specimenType} image for ${category} content. 
                 If it's an outcrop, identify the primary geological formations, lithology, and any visible fossils or minerals.
+                If it's a hand specimen, identify physical properties like luster, streak, cleavage, fracture, magnetism, effervescence (if possible from visual), and grain size.
                 ${category === 'rock' ? 'Identify the rock type (Igneous, Sedimentary, or Metamorphic), its mineral composition, texture, and name.' : `Identify the specific ${category}s present and estimate their percentage by volume.`}
                 Also estimate the geological era and geographic origin if possible.
                 Provide a detailed description for each identified item.`
@@ -442,6 +464,13 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           results: analysisResults,
           rockType: data.rockType || undefined,
           texture: data.texture || undefined,
+          luster: data.luster || undefined,
+          streak: data.streak || undefined,
+          cleavage: data.cleavage || undefined,
+          fracture: data.fracture || undefined,
+          magnetism: data.magnetism || undefined,
+          effervescence: data.effervescence || undefined,
+          grainSize: data.grainSize || undefined,
           geologicalEra: data.geologicalEra || undefined,
           geographicOrigin: data.geographicOrigin || undefined,
           status: 'approved', // Auto-approved for personal analysis
@@ -868,6 +897,46 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                   <input name="texture" placeholder="e.g. Crystalline" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.luster}</label>
+                  <input name="luster" placeholder={t.lusterPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.streak}</label>
+                  <input name="streak" placeholder={t.streakPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.cleavage}</label>
+                  <input name="cleavage" placeholder={t.cleavagePlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.fracture}</label>
+                  <input name="fracture" placeholder={t.fracturePlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.magnetism}</label>
+                  <input name="magnetism" placeholder={t.magnetismPlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.effervescence}</label>
+                  <input name="effervescence" placeholder={t.effervescencePlaceholder} className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.grainSize}</label>
+                  <input name="grainSize" placeholder="e.g. Fine, Coarse" className="w-full bg-stone-100 border-none rounded-lg py-2 px-3 text-sm font-medium" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -983,6 +1052,47 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                       <div className="bg-emerald-50 p-2 rounded-lg">
                         <p className="text-[10px] font-bold uppercase text-emerald-600">{t.texture}</p>
                         <p className="text-xs font-bold text-emerald-800">{record.texture}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {record.type === 'handspecimen' && (record.luster || record.streak || record.cleavage || record.fracture || record.magnetism || record.effervescence || record.grainSize) && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {record.luster && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.luster}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.luster}</p>
+                      </div>
+                    )}
+                    {record.streak && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.streak}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.streak}</p>
+                      </div>
+                    )}
+                    {record.cleavage && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.cleavage}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.cleavage}</p>
+                      </div>
+                    )}
+                    {record.fracture && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.fracture}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.fracture}</p>
+                      </div>
+                    )}
+                    {record.magnetism && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.magnetism}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.magnetism}</p>
+                      </div>
+                    )}
+                    {record.effervescence && (
+                      <div className="bg-stone-50 p-2 rounded-lg">
+                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.effervescence}</p>
+                        <p className="text-xs font-medium text-stone-700">{record.effervescence}</p>
                       </div>
                     )}
                   </div>
