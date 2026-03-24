@@ -119,6 +119,8 @@ export interface Translations {
   effervescencePlaceholder: string;
   geologicalContext: string;
   contextPlaceholder: string;
+  poweredByAntigravity: string;
+  gravityToggle: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -241,6 +243,8 @@ export const translations: Record<Language, Translations> = {
     effervescencePlaceholder: "e.g. Strong, None",
     geologicalContext: "Geological Context",
     contextPlaceholder: "Provide background information about location or formation...",
+    poweredByAntigravity: "Powered by Google Antigravity",
+    gravityToggle: "Toggle Gravity",
   },
   ur: {
     appName: "جیو آئیڈینٹیفائی پرو",
@@ -361,5 +365,7 @@ export const translations: Record<Language, Translations> = {
     effervescencePlaceholder: "مثلاً تیز، کوئی نہیں",
     geologicalContext: "ارضیاتی سیاق و سباق",
     contextPlaceholder: "مقام یا تشکیل کے بارے میں پس منظر کی معلومات فراہم کریں...",
+    poweredByAntigravity: "گوگل اینٹی گریویٹی کے ذریعے تقویت یافتہ",
+    gravityToggle: "کشش ثقل تبدیل کریں",
   }
 };

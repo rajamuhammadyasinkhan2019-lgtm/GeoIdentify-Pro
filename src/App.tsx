@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import Markdown from 'react-markdown';
+import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { translations, Language, Translations } from './translations';
@@ -151,6 +152,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'analyze' | 'contribute' | 'explore' | 'moderate'>('analyze');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [gravityEnabled, setGravityEnabled] = useState(true);
   
   // Filtering state
   const [filters, setFilters] = useState({
@@ -419,6 +421,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               magnetism: { type: "string", description: "If hand specimen, identify magnetism" },
               effervescence: { type: "string", description: "If hand specimen, identify effervescence with HCl" },
               grainSize: { type: "string", description: "If hand specimen, identify grain size" },
+              context: { type: "string", description: "Provide geological context about location or formation if inferable" },
               geologicalEra: { type: "string" },
               geographicOrigin: { type: "string" }
             },
@@ -433,7 +436,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                 If it's an outcrop, identify the primary geological formations, lithology, and any visible fossils or minerals.
                 If it's a hand specimen, identify physical properties like luster, streak, cleavage, fracture, magnetism, effervescence (if possible from visual), and grain size.
                 ${category === 'rock' ? 'Identify the rock type (Igneous, Sedimentary, or Metamorphic), its mineral composition, texture, and name.' : `Identify the specific ${category}s present and estimate their percentage by volume.`}
-                Also estimate the geological era and geographic origin if possible.
+                Also estimate the geological era, geographic origin, and provide any geological context if possible.
                 Provide a detailed description for each identified item.`
               },
               {
@@ -471,6 +474,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           magnetism: data.magnetism || undefined,
           effervescence: data.effervescence || undefined,
           grainSize: data.grainSize || undefined,
+          context: data.context || undefined,
           geologicalEra: data.geologicalEra || undefined,
           geographicOrigin: data.geographicOrigin || undefined,
           status: 'approved', // Auto-approved for personal analysis
@@ -491,9 +495,17 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
   const renderAnalyzeView = () => (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Left Column: Analysis Tool */}
-      <div className="lg:col-span-7 space-y-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-          <div className="p-6 border-b border-stone-100">
+      <div 
+        className={cn("lg:col-span-7 space-y-6", gravityEnabled && "antigravity-float")}
+      >
+        <div className={clsx(
+          "rounded-3xl shadow-2xl transition-all duration-500 overflow-hidden",
+          gravityEnabled ? "glass" : "bg-white border border-stone-200"
+        )}>
+          <div className={clsx(
+            "p-6 border-b",
+            gravityEnabled ? "border-white/10" : "border-stone-100"
+          )}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-600" />
@@ -682,9 +694,19 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
       </div>
 
       {/* Right Column: History */}
-      <div className="lg:col-span-5 space-y-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden h-full flex flex-col">
-          <div className="p-6 border-b border-stone-100 flex items-center justify-between">
+      <motion.div 
+        animate={gravityEnabled ? { y: [0, -15, 0] } : { y: 0 }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="lg:col-span-5 space-y-6"
+      >
+        <div className={clsx(
+          "rounded-3xl shadow-2xl transition-all duration-500 overflow-hidden h-full flex flex-col",
+          gravityEnabled ? "glass" : "bg-white border border-stone-200"
+        )}>
+          <div className={clsx(
+            "p-6 border-b flex items-center justify-between",
+            gravityEnabled ? "border-white/10" : "border-stone-100"
+          )}>
             <h2 className="text-lg font-bold flex items-center gap-2">
               <History className="w-5 h-5 text-emerald-600" />
               {t.historyTitle}
@@ -766,19 +788,28 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 
   const renderContributeView = () => (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-        <div className="p-6 border-b border-stone-100">
+    <div className={cn("max-w-4xl mx-auto", gravityEnabled && "antigravity-float")}>
+      <div className={clsx(
+        "rounded-3xl shadow-2xl transition-all duration-500 overflow-hidden",
+        gravityEnabled ? "glass" : "bg-white border border-stone-200"
+      )}>
+        <div className={clsx(
+          "p-6 border-b",
+          gravityEnabled ? "border-white/10" : "border-stone-100"
+        )}>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Share2 className="w-6 h-6 text-emerald-600" />
             {t.contributeTitle}
           </h2>
-          <p className="text-sm text-stone-500 mt-1">{t.contributeDesc}</p>
+          <p className={clsx(
+            "text-sm mt-1",
+            gravityEnabled ? "text-white/40" : "text-stone-500"
+          )}>{t.contributeDesc}</p>
         </div>
 
         <form onSubmit={handleContribution} className="p-6 space-y-8">
@@ -967,8 +998,15 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
   );
 
   const renderExploreView = () => (
-    <div className="space-y-8">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+    <motion.div 
+      animate={gravityEnabled ? { y: [0, -10, 0] } : { y: 0 }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      className="space-y-8"
+    >
+      <div className={clsx(
+        "p-6 rounded-2xl shadow-sm transition-all duration-500",
+        gravityEnabled ? "glass" : "bg-white border border-stone-200"
+      )}>
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1 space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-500">{t.searchEraOrigin}</label>
@@ -1033,36 +1071,78 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               </div>
               <div className="p-5 space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold text-stone-800">{record.results[0]?.name}</h3>
-                  <p className="text-xs text-stone-500 flex items-center gap-1 mt-1">
+                  <h3 className={clsx(
+                    "text-lg font-bold",
+                    gravityEnabled ? "text-white" : "text-stone-800"
+                  )}>{record.results[0]?.name}</h3>
+                  <p className={clsx(
+                    "text-xs flex items-center gap-1 mt-1",
+                    gravityEnabled ? "text-white/40" : "text-stone-500"
+                  )}>
                     <MapPin className="w-3 h-3" />
                     {record.geographicOrigin || t.unknownOrigin} • {record.geologicalEra || t.unknownEra}
                   </p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-stone-50 p-2 rounded-lg">
-                    <p className="text-[10px] font-bold uppercase text-stone-400">{t.hardness}</p>
-                    <p className="text-sm font-bold text-stone-700">{record.hardness || 'N/A'}</p>
+                  <div className={clsx(
+                    "p-2 rounded-lg",
+                    gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                  )}>
+                    <p className={clsx(
+                      "text-[10px] font-bold uppercase",
+                      gravityEnabled ? "text-white/30" : "text-stone-400"
+                    )}>{t.hardness}</p>
+                    <p className={clsx(
+                      "text-sm font-bold",
+                      gravityEnabled ? "text-white/80" : "text-stone-700"
+                    )}>{record.hardness || 'N/A'}</p>
                   </div>
-                  <div className="bg-stone-50 p-2 rounded-lg">
-                    <p className="text-[10px] font-bold uppercase text-stone-400">{t.volume}</p>
-                    <p className="text-sm font-bold text-stone-700">{record.results[0]?.percentage}%</p>
+                  <div className={clsx(
+                    "p-2 rounded-lg",
+                    gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                  )}>
+                    <p className={clsx(
+                      "text-[10px] font-bold uppercase",
+                      gravityEnabled ? "text-white/30" : "text-stone-400"
+                    )}>{t.volume}</p>
+                    <p className={clsx(
+                      "text-sm font-bold",
+                      gravityEnabled ? "text-white/80" : "text-stone-700"
+                    )}>{record.results[0]?.percentage}%</p>
                   </div>
                 </div>
 
                 {record.category === 'rock' && (record.rockType || record.texture) && (
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     {record.rockType && (
-                      <div className="bg-emerald-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-emerald-600">{t.rockType}</p>
-                        <p className="text-xs font-bold text-emerald-800">{record.rockType}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-emerald-500/10" : "bg-emerald-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-emerald-400/60" : "text-emerald-600"
+                        )}>{t.rockType}</p>
+                        <p className={clsx(
+                          "text-xs font-bold",
+                          gravityEnabled ? "text-emerald-400" : "text-emerald-800"
+                        )}>{record.rockType}</p>
                       </div>
                     )}
                     {record.texture && (
-                      <div className="bg-emerald-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-emerald-600">{t.texture}</p>
-                        <p className="text-xs font-bold text-emerald-800">{record.texture}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-emerald-500/10" : "bg-emerald-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-emerald-400/60" : "text-emerald-600"
+                        )}>{t.texture}</p>
+                        <p className={clsx(
+                          "text-xs font-bold",
+                          gravityEnabled ? "text-emerald-400" : "text-emerald-800"
+                        )}>{record.texture}</p>
                       </div>
                     )}
                   </div>
@@ -1071,50 +1151,166 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                 {record.type === 'handspecimen' && (record.luster || record.streak || record.cleavage || record.fracture || record.magnetism || record.effervescence || record.grainSize) && (
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     {record.luster && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.luster}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.luster}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.luster}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.luster}</p>
                       </div>
                     )}
                     {record.streak && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.streak}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.streak}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.streak}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.streak}</p>
                       </div>
                     )}
                     {record.cleavage && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.cleavage}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.cleavage}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.cleavage}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.cleavage}</p>
                       </div>
                     )}
                     {record.fracture && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.fracture}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.fracture}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.fracture}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.fracture}</p>
                       </div>
                     )}
                     {record.magnetism && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.magnetism}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.magnetism}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.magnetism}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.magnetism}</p>
                       </div>
                     )}
                     {record.effervescence && (
-                      <div className="bg-stone-50 p-2 rounded-lg">
-                        <p className="text-[10px] font-bold uppercase text-stone-400">{t.effervescence}</p>
-                        <p className="text-xs font-medium text-stone-700">{record.effervescence}</p>
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.effervescence}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.effervescence}</p>
+                      </div>
+                    )}
+                    {record.grainSize && (
+                      <div className={clsx(
+                        "p-2 rounded-lg",
+                        gravityEnabled ? "bg-white/5" : "bg-stone-50"
+                      )}>
+                        <p className={clsx(
+                          "text-[10px] font-bold uppercase",
+                          gravityEnabled ? "text-white/30" : "text-stone-400"
+                        )}>{t.grainSize}</p>
+                        <p className={clsx(
+                          "text-xs font-medium",
+                          gravityEnabled ? "text-white/70" : "text-stone-700"
+                        )}>{record.grainSize}</p>
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+                {record.context && (
+                  <div className={clsx(
+                    "mt-2 p-3 rounded-lg border",
+                    gravityEnabled ? "bg-white/5 border-white/10" : "bg-stone-50 border-stone-100"
+                  )}>
+                    <p className={clsx(
+                      "text-[10px] font-bold uppercase mb-1",
+                      gravityEnabled ? "text-white/30" : "text-stone-400"
+                    )}>{t.geologicalContext}</p>
+                    <p className={clsx(
+                      "text-xs italic line-clamp-2",
+                      gravityEnabled ? "text-white/60" : "text-stone-600"
+                    )}>"{record.context}"</p>
+                  </div>
+                )}
+
+                <div className={clsx(
+                  "pt-4 border-t flex items-center justify-between",
+                  gravityEnabled ? "border-white/10" : "border-stone-100"
+                )}>
                   <div className="flex items-center gap-4">
                     <button 
                       onClick={() => {
-                        // Show detailed report modal logic could go here
-                        alert(`Specimen Analysis Report for ${record.results[0]?.name}\n\nCharacteristics: ${record.results[0]?.description}\nEra: ${record.geologicalEra}\nOrigin: ${record.geographicOrigin}`);
+                        const report = `
+Specimen Analysis Report
+------------------------
+Name: ${record.results[0]?.name}
+Category: ${record.category}
+Type: ${record.type}
+Volume: ${record.results[0]?.percentage}%
+Era: ${record.geologicalEra || 'N/A'}
+Origin: ${record.geographicOrigin || 'N/A'}
+
+Physical Properties:
+- Hardness: ${record.hardness || 'N/A'}
+- Color: ${record.color || 'N/A'}
+${record.rockType ? `- Rock Type: ${record.rockType}` : ''}
+${record.texture ? `- Texture: ${record.texture}` : ''}
+${record.luster ? `- Luster: ${record.luster}` : ''}
+${record.streak ? `- Streak: ${record.streak}` : ''}
+${record.cleavage ? `- Cleavage: ${record.cleavage}` : ''}
+${record.fracture ? `- Fracture: ${record.fracture}` : ''}
+${record.magnetism ? `- Magnetism: ${record.magnetism}` : ''}
+${record.effervescence ? `- Effervescence: ${record.effervescence}` : ''}
+${record.grainSize ? `- Grain Size: ${record.grainSize}` : ''}
+
+Geological Context:
+${record.context || 'N/A'}
+
+Description:
+${record.results[0]?.description}
+                        `;
+                        alert(report);
                       }}
                       className="text-emerald-600 text-sm font-bold hover:text-emerald-700 transition-colors flex items-center gap-1"
                     >
@@ -1123,14 +1319,20 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                     </button>
                     <button 
                       onClick={() => handleShare(record)}
-                      className="text-stone-400 hover:text-emerald-600 transition-colors flex items-center gap-1 text-sm font-medium"
+                      className={clsx(
+                        "transition-colors flex items-center gap-1 text-sm font-medium",
+                        gravityEnabled ? "text-white/30 hover:text-emerald-400" : "text-stone-400 hover:text-emerald-600"
+                      )}
                       title={t.share}
                     >
                       <Share2 className="w-4 h-4" />
                       {t.share}
                     </button>
                   </div>
-                  <span className="text-[10px] text-stone-400">
+                  <span className={clsx(
+                    "text-[10px]",
+                    gravityEnabled ? "text-white/20" : "text-stone-400"
+                  )}>
                     {record.timestamp?.toDate().toLocaleDateString()}
                   </span>
                 </div>
@@ -1139,12 +1341,22 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 
   const renderModerateView = () => (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-      <div className="p-6 border-b border-stone-100 flex items-center justify-between">
+    <motion.div 
+      animate={gravityEnabled ? { y: [0, -10, 0] } : { y: 0 }}
+      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      className={clsx(
+        "rounded-3xl shadow-2xl transition-all duration-500 overflow-hidden",
+        gravityEnabled ? "glass" : "bg-white border border-stone-200"
+      )}
+    >
+      <div className={clsx(
+        "p-6 border-b flex items-center justify-between",
+        gravityEnabled ? "border-white/10" : "border-stone-100"
+      )}>
         <h2 className="text-xl font-bold flex items-center gap-2">
           <ShieldCheck className="w-6 h-6 text-emerald-600" />
           {t.modQueue}
@@ -1166,43 +1378,76 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           </thead>
           <tbody className="divide-y divide-stone-100">
             {publicRecords.filter(r => r.status === 'pending').map(record => (
-              <tr key={record.id} className="hover:bg-stone-50/50 transition-colors">
+              <tr key={record.id} className={clsx(
+                "transition-colors",
+                gravityEnabled ? "hover:bg-white/5" : "hover:bg-stone-50/50"
+              )}>
                 <td className="px-6 py-4">
-                  <div className="w-24 aspect-video rounded-lg overflow-hidden border border-stone-200">
+                  <div className={clsx(
+                    "w-24 aspect-video rounded-lg overflow-hidden border",
+                    gravityEnabled ? "border-white/10" : "border-stone-200"
+                  )}>
                     <img src={record.imageUrl} alt="Pending" className="w-full h-full object-cover" />
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-stone-800 capitalize">{t[record.type as keyof Translations] || record.type} • {t[record.category as keyof Translations] || record.category}</p>
-                    <p className="text-xs text-stone-500">{record.geographicOrigin} • {record.geologicalEra}</p>
+                    <p className={clsx(
+                      "text-sm font-bold capitalize",
+                      gravityEnabled ? "text-white/80" : "text-stone-800"
+                    )}>{t[record.type as keyof Translations] || record.type} • {t[record.category as keyof Translations] || record.category}</p>
+                    <p className={clsx(
+                      "text-xs",
+                      gravityEnabled ? "text-white/40" : "text-stone-500"
+                    )}>{record.geographicOrigin} • {record.geologicalEra}</p>
+                    {record.context && (
+                      <p className={clsx(
+                        "text-[10px] italic line-clamp-1",
+                        gravityEnabled ? "text-white/30" : "text-stone-400"
+                      )}>Context: {record.context}</p>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="space-y-1">
-                    <p className="text-sm font-bold text-emerald-700">{record.results[0]?.name} ({record.results[0]?.percentage}%)</p>
-                    <p className="text-xs text-stone-500 line-clamp-1">{record.results[0]?.description}</p>
+                    <p className={clsx(
+                      "text-sm font-bold",
+                      gravityEnabled ? "text-emerald-400" : "text-emerald-700"
+                    )}>{record.results[0]?.name} ({record.results[0]?.percentage}%)</p>
+                    <p className={clsx(
+                      "text-xs line-clamp-1",
+                      gravityEnabled ? "text-white/50" : "text-stone-500"
+                    )}>{record.results[0]?.description}</p>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => moderateRecord(record.id, 'approved')}
-                      className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                      className={clsx(
+                        "p-2 rounded-lg transition-colors",
+                        gravityEnabled ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                      )}
                       title={t.approve}
                     >
                       <CheckCircle2 className="w-5 h-5" />
                     </button>
                     <button 
                       onClick={() => moderateRecord(record.id, 'rejected')}
-                      className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                      className={clsx(
+                        "p-2 rounded-lg transition-colors",
+                        gravityEnabled ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" : "bg-red-50 text-red-600 hover:bg-red-100"
+                      )}
                       title={t.reject}
                     >
                       <XCircle className="w-5 h-5" />
                     </button>
                     <button 
                       onClick={() => deleteRecord(record.id)}
-                      className="p-2 bg-stone-100 text-stone-600 rounded-lg hover:bg-stone-200 transition-colors"
+                      className={clsx(
+                        "p-2 rounded-lg transition-colors",
+                        gravityEnabled ? "bg-white/10 text-white/50 hover:bg-white/20" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      )}
                       title={t.delete}
                     >
                       <Trash2 className="w-5 h-5" />
@@ -1213,7 +1458,10 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
             ))}
             {publicRecords.filter(r => r.status === 'pending').length === 0 && (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-stone-500">
+                <td colSpan={4} className={clsx(
+                  "px-6 py-12 text-center",
+                  gravityEnabled ? "text-white/30" : "text-stone-500"
+                )}>
                   {t.noPending}
                 </td>
               </tr>
@@ -1221,7 +1469,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 
   // Connection Test
@@ -1249,16 +1497,40 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col font-sans text-stone-900">
+    <div className={clsx(
+      "min-h-screen flex flex-col font-sans transition-all duration-1000",
+      gravityEnabled ? "bg-black text-white" : "bg-stone-50 text-stone-900",
+      gravityEnabled && "antigravity-drift"
+    )}>
+      {/* Gravity Toggle */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setGravityEnabled(!gravityEnabled)}
+        className={clsx(
+          "fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all",
+          gravityEnabled ? "glass text-violet-400 hover:text-violet-300" : "bg-white border border-stone-200 text-stone-600 hover:text-emerald-600"
+        )}
+        title={t.gravityToggle}
+      >
+        <RotateCcw className={clsx("w-6 h-6", gravityEnabled && "animate-spin-slow")} />
+      </motion.button>
+
       {/* Header */}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
+      <header className={clsx(
+        "sticky top-0 z-10 transition-all duration-500",
+        gravityEnabled ? "bg-black/80 backdrop-blur-md border-b border-white/10" : "bg-white border-b border-stone-200"
+      )}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('analyze')}>
-              <div className="bg-emerald-600 p-2 rounded-lg">
+              <div className="bg-emerald-600 p-2 rounded-lg shadow-lg shadow-emerald-900/20">
                 <Microscope className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-emerald-900">GeoIdentify Pro</h1>
+              <h1 className={clsx(
+                "text-xl font-bold tracking-tight",
+                gravityEnabled ? "text-white" : "text-emerald-900"
+              )}>GeoIdentify Pro</h1>
             </div>
 
             {user && (
@@ -1332,40 +1604,66 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
-        {!user ? (
-          <div className="max-w-md mx-auto mt-12 text-center space-y-6">
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-stone-200">
-              <h2 className="text-2xl font-bold mb-4">{t.welcomeTitle}</h2>
-              <p className="text-stone-600 mb-8">
-                {t.welcomeDesc}
+        <AnimatePresence mode="wait">
+          {!user ? (
+            <motion.div 
+              key="login"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="max-w-md mx-auto mt-12 text-center space-y-6"
+            >
+              <div className={clsx(
+                "p-8 rounded-3xl shadow-2xl transition-all duration-500",
+                gravityEnabled ? "glass" : "bg-white border border-stone-200"
+              )}>
+                <h2 className="text-3xl font-bold mb-4">{t.welcomeTitle}</h2>
+                <p className={clsx(
+                  "mb-8",
+                  gravityEnabled ? "text-violet-200/70" : "text-stone-600"
+                )}>
+                  {t.welcomeDesc}
+                </p>
+                <button 
+                  onClick={handleLogin}
+                  className={clsx(
+                    "w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl transition-all font-medium shadow-sm",
+                    gravityEnabled ? "bg-white text-black hover:bg-violet-50" : "bg-white border border-stone-300 text-stone-700 hover:bg-stone-50"
+                  )}
+                >
+                  <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
+                  {t.continueWithGoogle}
+                </button>
+              </div>
+              <p className="text-sm text-stone-500">
+                {t.developedFor}
               </p>
-              <button 
-                onClick={handleLogin}
-                className="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-stone-700 px-6 py-3 rounded-xl hover:bg-stone-50 transition-all font-medium shadow-sm"
-              >
-                <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-                {t.continueWithGoogle}
-              </button>
-            </div>
-            <p className="text-sm text-stone-500">
-              {t.developedFor}
-            </p>
-          </div>
-        ) : (
-          <>
-            {view === 'analyze' && renderAnalyzeView()}
-            {view === 'contribute' && renderContributeView()}
-            {view === 'explore' && renderExploreView()}
-            {view === 'moderate' && isAdmin && renderModerateView()}
-          </>
-        )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={view}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {view === 'analyze' && renderAnalyzeView()}
+              {view === 'contribute' && renderContributeView()}
+              {view === 'explore' && renderExploreView()}
+              {view === 'moderate' && isAdmin && renderModerateView()}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Footer */}
-      <footer className="bg-stone-900 text-stone-400 py-12 mt-auto">
+      <footer className={clsx(
+        "py-12 mt-auto transition-all duration-1000",
+        gravityEnabled ? "bg-black/80 border-t border-white/10 text-white/40" : "bg-stone-900 text-stone-400"
+      )}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="space-y-4">
+            <div className={cn("space-y-4", gravityEnabled && "antigravity-float")}>
               <div className="flex items-center gap-2">
                 <Microscope className="w-6 h-6 text-emerald-500" />
                 <span className="text-xl font-bold text-white">{t.appName}</span>
@@ -1374,9 +1672,17 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
                 Advanced AI-powered geological identification system for thin sections and hand specimens. 
                 Automated volume estimation for minerals, pollen, spores, and fossils.
               </p>
+              {gravityEnabled && (
+                <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/10 shadow-xl w-fit">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                    {t.poweredByAntigravity}
+                  </span>
+                </div>
+              )}
             </div>
             
-            <div className="space-y-4">
+            <div className={cn("space-y-4", gravityEnabled && "antigravity-float")}>
               <h4 className="text-white font-bold uppercase tracking-widest text-xs">{t.authorInfo}</h4>
               <div className="space-y-2">
                 <p className="text-sm font-medium text-stone-200">Muhammad Yasin Khan</p>
@@ -1389,7 +1695,7 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className={cn("space-y-4", gravityEnabled && "antigravity-float")}>
               <h4 className="text-white font-bold uppercase tracking-widest text-xs">{t.origin}</h4>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-6 flex rounded-sm overflow-hidden border border-emerald-800 shadow-sm">
@@ -1412,8 +1718,15 @@ function GeoIdentifyApp({ lang, setLang }: { lang: Language, setLang: (l: Langua
             </div>
           </div>
           
-          <div className="pt-8 border-t border-stone-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs">© 2026 {t.appName}. {t.rightsReserved}</p>
+          <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <p className="text-xs">© 2026 {t.appName}. {t.rightsReserved}</p>
+              {!gravityEnabled && (
+                <span className="text-violet-500 font-bold tracking-widest uppercase text-[10px] animate-pulse">
+                  {t.poweredByAntigravity}
+                </span>
+              )}
+            </div>
             <div className="flex gap-6 text-xs">
               <a href="#" className="hover:text-white transition-colors">{t.privacyPolicy}</a>
               <a href="#" className="hover:text-white transition-colors">{t.termsOfService}</a>
